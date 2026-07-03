@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,8 +53,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LaunchpadScreen() {
-    Column {
-        Row {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(6.dp)
+    ) {
+        Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
             for (col in 0..8) {
                 if (col < 8) {
                     val cc = LaunchpadMapping.topRowCC[col]
@@ -114,5 +119,32 @@ fun LaunchpadButton(
     onPress: () -> Unit,
     onRelease: () -> Unit
 ) {
+    var pressed by remember { mutableStateOf(false) }
 
+    Box(
+        modifier = modifier
+            .padding(3.dp)
+            .background(if (pressed) pressedColor else idleColor, shape)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        pressed = true
+                        onPress()
+
+                        tryAwaitRelease()
+                        pressed = false
+                        onRelease()
+                    }
+                )
+            },
+
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = Color.White.copy(alpha = 0.35f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
 }
